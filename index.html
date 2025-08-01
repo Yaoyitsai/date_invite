@@ -1,71 +1,117 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>小小問題問你❤️</title>
+  <title>Erin 的像素旅程</title>
   <style>
-    body {
-      background-color: #fff0f5;
-      font-family: "微軟正黑體", sans-serif;
-      text-align: center;
-      margin-top: 100px;
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
     }
-    h1 {
-      color: #d63384;
-      font-size: 32px;
+    canvas {
+      display: block;
+      background: #000;
     }
-    .btn {
-      padding: 10px 20px;
-      font-size: 20px;
-      margin: 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    #yes {
-      background-color: #ff69b4;
-      color: white;
-    }
-    #no {
-      background-color: #eee;
-      color: #333;
+    #textBox {
       position: absolute;
-    }
-    #melody {
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      color: white;
+      font-size: 20px;
       display: none;
-      margin-top: 30px;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    #endScene {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('https://i.imgur.com/JmG4Ymj.png') no-repeat center center;
+      background-size: cover;
+      color: white;
+      text-align: center;
+      font-size: 24px;
+      padding-top: 40vh;
     }
   </style>
 </head>
 <body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<div id="textBox">Erin 抵達竹南！準備搭飛機前往沖繩 ✈️</div>
+<div id="endScene">美樂蒂：我好開心你願意來💗<br><br>你願意陪我一起，飛得更遠嗎？</div>
 
-  <h1>你願意跟我出去約會嗎？🥺</h1>
-  <button class="btn" id="yes">好呀❤️</button>
-  <button class="btn" id="no">不要</button>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-  <div id="melody">
-    <img src="https://media.giphy.com/media/l0MYC0LajbaPoEADu/giphy.gif" width="300">
-    <p>耶！我會好好準備的 💕</p>
-  </div>
+const erin = new Image();
+erin.src = 'https://i.imgur.com/DmW84ZG.png'; // 像素風 Erin 角色
 
-  <script>
-    const noBtn = document.getElementById("no");
-    const yesBtn = document.getElementById("yes");
-    const melody = document.getElementById("melody");
+const map = new Image();
+map.src = 'https://i.imgur.com/d9g0zlt.jpeg'; // 高雄到竹南地圖
 
-    noBtn.addEventListener("mouseover", function () {
-      const x = Math.random() * (window.innerWidth - 100);
-      const y = Math.random() * (window.innerHeight - 100);
-      noBtn.style.left = `${x}px`;
-      noBtn.style.top = `${y}px`;
-    });
+const airplane = new Image();
+airplane.src = 'https://i.imgur.com/UffHiH1.png'; // 飛機像素圖
 
-    yesBtn.addEventListener("click", function () {
-      yesBtn.style.display = "none";
-      noBtn.style.display = "none";
-      melody.style.display = "block";
-    });
-  </script>
+let erinX = 50, erinY = 450;
+const speed = 5;
+let destination = { x: 580, y: 310 };
+let keys = {};
+let flying = false;
+let planeX = 600, planeY = 310;
+
+const textBox = document.getElementById('textBox');
+const endScene = document.getElementById('endScene');
+
+addEventListener('keydown', e => keys[e.key] = true);
+addEventListener('keyup', e => keys[e.key] = false);
+
+function update() {
+  if (!flying) {
+    if (keys['ArrowUp']) erinY -= speed;
+    if (keys['ArrowDown']) erinY += speed;
+    if (keys['ArrowLeft']) erinX -= speed;
+    if (keys['ArrowRight']) erinX += speed;
+
+    if (Math.abs(erinX - destination.x) < 30 && Math.abs(erinY - destination.y) < 30) {
+      flying = true;
+      textBox.style.display = 'block';
+      setTimeout(() => textBox.style.display = 'none', 2000);
+      setTimeout(() => fadeToEnd(), 4000);
+    }
+  } else {
+    planeY -= 2;
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(map, 0, 0, canvas.width, canvas.height);
+
+  if (!flying) {
+    ctx.drawImage(erin, erinX, erinY, 64, 64);
+  } else {
+    ctx.drawImage(airplane, planeX, planeY, 64, 64);
+  }
+}
+
+function fadeToEnd() {
+  canvas.style.display = 'none';
+  endScene.style.display = 'block';
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+map.onload = () => gameLoop();
+</script>
 </body>
 </html>
